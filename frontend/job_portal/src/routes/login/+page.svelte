@@ -1,7 +1,10 @@
 <script>
-  import {login} from '../../services/authentication'
+    import { goto } from '$app/navigation';
+  import {login,login_token} from '../../services/authentication'
+  import { v4 as uuidv4 } from 'uuid';
     import { error_toast, success_toast } from '../../services/toast_theme';
     import { SvelteToast, toast } from '@zerodevx/svelte-toast'
+    import {current_user} from '../../stores/user_detail'
   let email = "";
   let password = "";
   let error = null;
@@ -17,7 +20,12 @@
       console.log(response)
 
       if (response.status=='green') {
+        login_token(uuidv4());
+
         success_toast('Login Successful')
+        $current_user = response.data
+        goto('jobportal')
+
         // Login was successful, navigate to the user dashboard or other page
         // You can use Svelte's router to navigate to a new page
         // For example, navigate to a dashboard page: $router.push('/dashboard');

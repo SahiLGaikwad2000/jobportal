@@ -13,8 +13,37 @@ const fetch_jobs = async(currentPage,jobsPerPage)=>{
         return response
 }
 
+const applyJob = async(data)=>{
+    const response = await fetch(
+        global_url+'applyJob',{
+            method: "POST",
+            body: data,
+        }
+
+        ).then(
+        async(response)=>{
+            return await response.json()
+            }
+        );
+        return response
+}
+
+const applied_jobs = async(user_id)=>{
+    const response = await fetch(
+        global_url+`applied_jobs?user_id=${user_id}`
+
+        ).then(
+        async(response)=>{
+            return await response.json()
+            }
+        );
+        return response
+}
+
 
 export{
-    fetch_jobs
+    fetch_jobs,
+    applyJob,
+    applied_jobs
 }
 

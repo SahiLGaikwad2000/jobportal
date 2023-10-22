@@ -17,6 +17,18 @@ const signup = async(data)=>{
 
 }
 
+export function isLoggedIn() {
+    return !!localStorage.getItem('userToken');
+}
+
+export function login_token(token) {
+    localStorage.setItem('userToken', token);
+}
+
+export function logout() {
+    localStorage.removeItem('userToken');
+}
+
 
 
 const login = async(data)=>{
