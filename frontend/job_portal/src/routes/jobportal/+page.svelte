@@ -8,6 +8,7 @@
     import { goto } from "$app/navigation";
     import Navbar from '../components/navbar.svelte';
     import {current_user} from '../../stores/user_detail'
+    import Spinner from '../components/spinner.svelte';
     let jobs = [];
     let currentPage = 1;
     let jobsPerPage = 10; // Number of jobs to display per page
@@ -20,23 +21,28 @@
     let formData
     let applied_job_id=[]
     let already_applied=false
+    let show_spinner = false
     // Function to fetch job data
     async function fetchJobs() {
+      show_spinner=true
       const response = await fetch_jobs(currentPage,jobsPerPage);
       console.log(response)
       if (response.status=='green') {
         jobs = response.data
       }
+      show_spinner=false
     }
 
 
     async function applied_user_jobs(){
+      show_spinner=true
         const response = await applied_jobs($current_user);
         console.log(response)
         if (response.data){
             applied_job_id = response.data.map((e)=>{return e.job_id})
             console.log(applied_job_id)
         }
+        show_spinner=false
 
     }
 
@@ -96,6 +102,7 @@
         formData.append('other_params',JSON.stringify(payload))
 
         console.log(formData)
+        show_spinner=true
         let response = await applyJob(formData);
         console.log(response)
         if (response.status=='green'){
@@ -108,6 +115,7 @@
         else{
             error_toast(response)
         }
+        show_spinner=false
 
     }
 
@@ -115,6 +123,7 @@
 
 
     onMount(()=>{
+      show_spinner=true
         if (!isLoggedIn()) {
             // Redirect to the login page
             goto('login');
@@ -122,6 +131,7 @@
         console.log($current_user)
         applied_user_jobs()
         fetchJobs()
+        show_spinner=false
 
 
     });
@@ -141,8 +151,10 @@
         return skills.split(',').map(skill => skill.trim());
     } // Fetch data when the component is mounted
   </script>
-
-<main class="min-h-screen flex flex-col items-center justify-center">
+{#if show_spinner}
+<Spinner />
+{/if}
+<main class=" flex flex-col items-center justify-center">
     <Navbar/>
     <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 max-w-4xl mx-auto">
 

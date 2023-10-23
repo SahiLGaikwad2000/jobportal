@@ -3,11 +3,12 @@
   import { error_toast, success_toast } from '../../services/toast_theme';
   import { goto } from "$app/navigation";
   import {signup} from '../../services/authentication'
+  import Spinner from '../components/spinner.svelte';
     let username = "";
     let email = "";
     let password = "";
 
-
+    let show_spinner=false
 
 
     const reset_val=()=>{
@@ -23,15 +24,18 @@
       //   },
       //   body: JSON.stringify({ username, email, password }),
       // });
+      show_spinner = true
       let response = await signup(JSON.stringify({ username, email, password }))
         console.log(response)
+
       if (response.status=='green') {
         // Handle successful signup
 
         success_toast("Signed up successfully",2000)
         setTimeout(()=>{
+          show_spinner=false
           goto("login")
-        },3000)
+        },1000)
 
       } else {
         let error = response.error;
@@ -41,7 +45,9 @@
       }
     }
   </script>
-
+  {#if show_spinner}
+<Spinner />
+{/if}
   <main class="min-h-screen flex items-center justify-center">
     <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
       <h2 class="text-2xl mb-4">Sign up</h2>
@@ -56,4 +62,5 @@
       </p>
     </div>
   </main>
+
 <SvelteToast/>

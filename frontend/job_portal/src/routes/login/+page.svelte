@@ -5,9 +5,11 @@
     import { error_toast, success_toast } from '../../services/toast_theme';
     import { SvelteToast, toast } from '@zerodevx/svelte-toast'
     import {current_user} from '../../stores/user_detail'
+    import Spinner from '../components/spinner.svelte';
   let email = "";
   let password = "";
   let error = null;
+  let show_spinner=false
 
   async function login_handler() {
     const userData = {
@@ -16,9 +18,10 @@
     };
 
     try {
+      show_spinner=true
       let response = await login(JSON.stringify(userData))
       console.log(response)
-
+      show_spinner=false
       if (response.status=='green') {
         login_token(uuidv4());
 
@@ -41,7 +44,9 @@
     }
   }
 </script>
-
+{#if show_spinner}
+<Spinner />
+{/if}
 <main class="min-h-screen flex items-center justify-center">
   <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
     <h2 class="text-2xl mb-4">Login</h2>
