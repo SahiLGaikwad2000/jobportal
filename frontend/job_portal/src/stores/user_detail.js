@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
 
-export const current_user = writable({
-   
+export const show_logout_store = writable({
+    show:false
 });

@@ -2,16 +2,17 @@
 <script>
     import {fetch_jobs,applyJob,applied_jobs} from '../../services/job_service'
     import { onMount } from 'svelte';
-    import {isLoggedIn} from '../../services/authentication'
+    import {isLoggedIn,get_user_id} from '../../services/authentication'
     import { error_toast, success_toast } from '../../services/toast_theme';
     import { SvelteToast, toast } from '@zerodevx/svelte-toast'
     import { goto } from "$app/navigation";
-    import Navbar from '../components/navbar.svelte';
-    import {current_user} from '../../stores/user_detail'
+
+    import {show_logout_store} from '../../stores/user_detail'
     import Spinner from '../components/spinner.svelte';
     let jobs = [];
     let currentPage = 1;
-    let jobsPerPage = 10; // Number of jobs to display per page
+    let jobsPerPage = 5;
+    let totalJobs = 0; // Number of jobs to display per page
     let selectedJob;
     let email;
     let name;
@@ -22,13 +23,15 @@
     let applied_job_id=[]
     let already_applied=false
     let show_spinner = false
+    // let searchTerm = '';
     // Function to fetch job data
     async function fetchJobs() {
       show_spinner=true
-      const response = await fetch_jobs(currentPage,jobsPerPage);
-      console.log(response)
+      const response = await fetch_jobs('',currentPage,jobsPerPage);
+      
       if (response.status=='green') {
         jobs = response.data
+        totalJobs = response.totalJobs;
       }
       show_spinner=false
     }
@@ -36,7 +39,7 @@
 
     async function applied_user_jobs(){
       show_spinner=true
-        const response = await applied_jobs($current_user);
+        const response = await applied_jobs(get_user_id());
         console.log(response)
         if (response.data){
             applied_job_id = response.data.map((e)=>{return e.job_id})
@@ -92,7 +95,7 @@
         let payload={
             'name':name,
             'email':email,
-            'user_id':$current_user,
+            'user_id':get_user_id,
             'job_id':selectedJob.job_id,
             'filename':selectedFile.name
 
@@ -128,13 +131,16 @@
             // Redirect to the login page
             goto('login');
         }
-        console.log($current_user)
+
+
         applied_user_jobs()
         fetchJobs()
         show_spinner=false
 
 
     });
+
+
 
 
     function handle_selected_job(job){
@@ -154,11 +160,14 @@
 {#if show_spinner}
 <Spinner />
 {/if}
-<main class=" flex flex-col items-center justify-center">
-    <Navbar/>
+
+<div class="content">
+<main class="flex flex-col items-center justify-center">
+
     <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 max-w-4xl mx-auto">
 
       <h1 class="text-2xl mb-4">Job Portal</h1>
+
       <div class="details-container">
         <div class="overflow-x-auto">
           <table class="w-full border-collapse text-left">
@@ -185,7 +194,7 @@
           <div class="mt-4 flex justify-between">
             <button on:click={prevPage} disabled={currentPage === 1} class="bg-blue-500 text-white p-2 rounded hover:bg-blue-700">Previous</button>
             <span class="text-blue-500">Page {currentPage}</span>
-            <button on:click={nextPage} disabled={jobs.length < jobsPerPage} class="bg-blue-500 text-white p-2 rounded hover:bg-blue-700">Next</button>
+            <button on:click={nextPage} disabled={currentPage * jobsPerPage >= totalJobs} class="bg-blue-500 text-white p-2 rounded hover:bg-blue-700">Next</button>
           </div>
         </div>
 
@@ -236,10 +245,42 @@
             {/if}
         </div>
 
+
+
+
+
+        {:else}
+
+
+
+
+
+        <div class="w-1/2 px-4 selected-job-container job-details">
+          <h2 class="text-2xl mb-4">Job Details</h2>
+
+
+
+
+
+
+
+          <div class="info-message">
+           Select a job to view details
+          </div>
+
+        </div>
+
+
+
+
+
+
+
       {/if}
       </div>
     </div>
 
 
   </main>
+</div>
   <SvelteToast/>

@@ -86,19 +86,26 @@ app.post('/api/login', (req, res) => {
 
 // get all active jobs method
 app.get('/api/jobs', (req, res) => {
-  const { page, perPage } = req.query;
+  const { searchterm,page, perPage } = req.query;
   const offset = (page - 1) * perPage;
+  const getCountQuery = `SELECT COUNT(*) AS total_jobs FROM job_master WHERE status = 'active'`;
 
   const getJobsQuery = `SELECT * FROM job_master WHERE status = 'active' LIMIT ${perPage} OFFSET ${offset}`;
-
+  db.query(getCountQuery, (error, countResult) => {
+    if (error) {
+      console.error('Error fetching job count:', error);
+      res.status(500).json({ error: 'Error fetching job count' });
+      return;
+    }
   db.query(getJobsQuery, (error, results) => {
     if (error) {
       console.error('Error fetching jobs:', error);
       res.status(500).json({ error: 'Error fetching jobs' });
       return;
     }
-
-    res.json({status:'green',data:results});
+    const totalJobs = countResult[0].total_jobs;
+    res.json({status:'green',data:results,totalJobs});
+    });
   });
 });
 
@@ -111,7 +118,7 @@ app.post('/api/applyJob',upload.single('file'),async(req, res) => {
     const fileData = await fs.promises.readFile(file.path);
 
     const otherParam = JSON.parse(body.other_params);
-    console.log(otherParam)
+    
     const insertQuery = 'INSERT INTO job_applications (job_id,user_id,base64_data,filename) VALUES (?,?,?,?)';
     db.query(insertQuery, [otherParam.job_id,otherParam.user_id,fileData,otherParam.filename], (err, result) => {
         if (err) {
@@ -146,6 +153,7 @@ app.get('/api/applied_jobs', (req, res) => {
     res.json({status:'green',data:results});
   });
 });
+
 
 
 

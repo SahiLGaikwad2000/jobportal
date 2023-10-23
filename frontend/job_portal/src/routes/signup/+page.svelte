@@ -48,19 +48,26 @@
   {#if show_spinner}
 <Spinner />
 {/if}
-  <main class="min-h-screen flex items-center justify-center">
-    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-      <h2 class="text-2xl mb-4">Sign up</h2>
-      <input type="text" placeholder="Username" bind:value={username} class="mb-4" required />
-      <input type="email" placeholder="Email" bind:value={email} class="mb-4" required />
-      <input type="password" placeholder="Password" bind:value={password}  required ="mb-4" />
-      <button on:click={signup_handler} class="w-full bg-blue-500 text-white p-2 rounded">
-        Sign up
-      </button>
-      <p class="mt-4 text-center">
-        Already have an account? <a href="/login" class="text-blue-500">Log in</a>
-      </p>
+<main class="min-h-screen flex items-center justify-center">
+  <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 max-w-2xl w-full mx-auto">
+    <h2 class="text-2xl mb-4 text-center" >Sign up</h2>
+    <div class="mb-4">
+      <input type="text" placeholder="Username" bind:value={username} class="w-full p-2" required />
     </div>
-  </main>
+    <div class="mb-4">
+      <input type="email" placeholder="Email" bind:value={email} class="w-full p-2" required />
+    </div>
+    <div class="mb-4">
+      <input type="password" placeholder="Password" bind:value={password} class="w-full p-2" required />
+    </div>
+    <button on:click={signup_handler} class="w-full bg-blue-500 text-white p-2 rounded">
+      Sign up
+    </button>
+    <p class="mt-4 text-center">
+      Already have an account? <a href="/login" class="text-blue-500">Log in</a>
+    </p>
+  </div>
+</main>
+
 
 <SvelteToast/>
