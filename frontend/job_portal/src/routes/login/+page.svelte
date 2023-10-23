@@ -10,8 +10,46 @@
   let password = "";
   let error = null;
   let show_spinner=false
+  let valid_email=true
+  let valid_pass=true
+
+
+  const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+
+
+  function validateForm() {
+    // Validate email
+    valid_email=true
+    valid_pass=true
+  
+    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
+    let emailValid = email.match(emailRegex);
+    if (!emailValid) {
+      error = "Email is invalid"
+      valid_email=false
+      // error_toast("Email is invalid")
+      return false
+
+    }
+
+    if (!password) {
+      error = "Password is required"
+      valid_pass=false
+      // error_toast("Password is required")
+      return false
+    }
+
+    return true;
+    }
+
+
+
+
+
 
   async function login_handler() {
+    if (validateForm()) {
     const userData = {
       email,
       password,
@@ -29,18 +67,15 @@
 
         goto('jobportal')
 
-        // Login was successful, navigate to the user dashboard or other page
-        // You can use Svelte's router to navigate to a new page
-        // For example, navigate to a dashboard page: $router.push('/dashboard');
+
       } else {
         error_toast(response.error)
-        // Handle the login error
-        // const errorData = await response.json();
-        // error = errorData.error;
+
       }
     } catch (error) {
       console.error('An error occurred:', error);
       error = 'An unexpected error occurred';
+    }
     }
   }
 </script>
@@ -51,10 +86,16 @@
   <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4  max-w-2xl w-full mx-auto">
     <h2 class="text-2xl mb-4 text-center">Login</h2>
     <div class="mb-4">
-      <input type="text" placeholder="Email" bind:value={email} class="w-full p-2" />
+      <input type="text" placeholder="Email" bind:value={email} class=" w-full p-2" />
+      {#if !valid_email}
+      <div class="text-sm p-2 text-red-500">{error}</div>
+      {/if}
     </div>
     <div class="mb-4">
       <input type="password" placeholder="Password" bind:value={password} class="w-full p-2" />
+      {#if !valid_pass}
+      <div class="text-sm p-2 text-red-500">{error}</div>
+      {/if}
     </div>
     <button on:click={login_handler} class="w-full bg-blue-500 text-white p-2 rounded">
       Login

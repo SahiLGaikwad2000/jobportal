@@ -6,6 +6,7 @@ const app = express();
 const port = 3000;
 const multer = require('multer');
 const fs = require('fs');
+const { error } = require("console");
 const upload = multer({ dest: 'uploads/' });
 
 app.use(bodyParser.json());
@@ -77,7 +78,7 @@ app.post('/api/login', (req, res) => {
       res.status(200).json({ status:'green',message: 'Login Successfully',data:results[0].id});
     } else {
       // Email doesn't exist, proceed with user registration
-      res.status(400).json({ status:'red',error: 'User not found'});
+      res.status(400).json({ status:'red',error: 'Email or Password is incorrect'});
 
     }
   });
@@ -118,7 +119,7 @@ app.post('/api/applyJob',upload.single('file'),async(req, res) => {
     const fileData = await fs.promises.readFile(file.path);
 
     const otherParam = JSON.parse(body.other_params);
-    
+
     const insertQuery = 'INSERT INTO job_applications (job_id,user_id,base64_data,filename) VALUES (?,?,?,?)';
     db.query(insertQuery, [otherParam.job_id,otherParam.user_id,fileData,otherParam.filename], (err, result) => {
         if (err) {
@@ -155,7 +156,20 @@ app.get('/api/applied_jobs', (req, res) => {
 });
 
 
+app.get('/api/user',(req,res)=>{
+  const id = req.query.user_id
+  const get_user_by_id_query=`select email from users where id=${id}`
+  db.query(get_user_by_id_query,(error,result)=>{
+    if (error) {
+      console.error('Error fetching jobs:', error);
+      res.status(500).json({ error: 'Error fetching jobs' });
+      return;
+    }
 
+    res.json({status:'green',result:result[0]})
+  })
+
+})
 
 
 

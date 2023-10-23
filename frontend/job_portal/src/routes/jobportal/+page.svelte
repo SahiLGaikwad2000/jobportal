@@ -1,6 +1,6 @@
 <!-- JobPortal.svelte -->
 <script>
-    import {fetch_jobs,applyJob,applied_jobs} from '../../services/job_service'
+    import {fetch_jobs,applyJob,applied_jobs,get_user_email} from '../../services/job_service'
     import { onMount } from 'svelte';
     import {isLoggedIn,get_user_id} from '../../services/authentication'
     import { error_toast, success_toast } from '../../services/toast_theme';
@@ -11,7 +11,7 @@
     import Spinner from '../components/spinner.svelte';
     let jobs = [];
     let currentPage = 1;
-    let jobsPerPage = 5;
+    let jobsPerPage = 10;
     let totalJobs = 0; // Number of jobs to display per page
     let selectedJob;
     let email;
@@ -23,12 +23,14 @@
     let applied_job_id=[]
     let already_applied=false
     let show_spinner = false
+    let maxSize = 5 * 1024 * 1024;
+    let fileInput;
     // let searchTerm = '';
     // Function to fetch job data
     async function fetchJobs() {
       show_spinner=true
       const response = await fetch_jobs('',currentPage,jobsPerPage);
-      
+
       if (response.status=='green') {
         jobs = response.data
         totalJobs = response.totalJobs;
@@ -36,6 +38,13 @@
       show_spinner=false
     }
 
+
+    async function get_email_by_id(){
+      const response = await get_user_email(get_user_id())
+      console.log(response)
+      email = response.result.email
+      console.log(email)
+    }
 
     async function applied_user_jobs(){
       show_spinner=true
@@ -67,14 +76,20 @@
     }
     function handle_upload(event){
         selectedFile = event.target.files[0];
+        if (selectedFile.size > maxSize) {
 
+          alert("File size exceeds 5MB. Please choose a smaller file.");
+
+          e.target.value = null;
+        }
     }
 
 
     const applyForJob=async()=>{
         console.log(selectedJob.job_id)
-        if (!email || email.trim()==''){
-            error_toast('Email is mandatory')
+        const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
+        if (!email || email.trim()=='' || !email.match(emailRegex)){
+            error_toast('Email is invalid')
             return
         }
         if (!name || name.trim()==''){
@@ -95,7 +110,7 @@
         let payload={
             'name':name,
             'email':email,
-            'user_id':get_user_id,
+            'user_id':get_user_id(),
             'job_id':selectedJob.job_id,
             'filename':selectedFile.name
 
@@ -132,7 +147,7 @@
             goto('login');
         }
 
-
+        get_email_by_id()
         applied_user_jobs()
         fetchJobs()
         show_spinner=false
@@ -174,7 +189,7 @@
             <thead>
               <tr class="border-b">
                 <th class="p-2 font-semibold">Job ID</th>
-                <th class="p-2 font-semibold">Job Description</th>
+                <th class="p-2 font-semibold">Job Title</th>
                 <th class="p-2 font-semibold">Job Location</th>
               </tr>
             </thead>
@@ -185,7 +200,7 @@
                   on:click={() => {handle_selected_job(job)}}
                 >
                   <td class="p-2">{job.job_id}</td>
-                  <td class="p-2">{job.job_description}</td>
+                  <td class="p-2">{job.job_title}</td>
                   <td class="p-2">{job.job_location}</td>
                 </tr>
               {/each}
@@ -203,7 +218,8 @@
           <h2 class="text-2xl mb-4">Job Details</h2>
           <ul>
             <li><strong>Job ID:</strong> {selectedJob.job_id}</li>
-            <li><strong>Job Description:</strong> {selectedJob.job_description}</li>
+            <li><strong>Job Title:</strong> {selectedJob.job_title}</li>
+            <li><strong>Job Desciption:</strong> {selectedJob.job_description}</li>
             <li><strong>Job Location:</strong> {selectedJob.job_location}</li>
             <li><strong>Skills Required:</strong>
               <ul>
@@ -237,8 +253,10 @@
             <input type="text" id="name" bind:value={name} class="w-full p-2 mb-2" required>
 
             <label for="resume">Upload Resume (PDF):</label>
-            <input type="file" id="resume" on:change={handle_upload} accept=".pdf" class="w-full p-2 mb-2" required>
-
+            <input type="file" id="fileInput" bind:this={fileInput} on:change={handle_upload} accept=".pdf" class="w-full p-1 mb-1" required>
+            {#if selectedFile}
+            <button type="button" on:click={(e)=>{ fileInput.value = '';e.target.value=null,selectedFile=null}} class="text-red-500 p-1 mb-1">Remove File</button>
+            {/if}
             <button type="button" on:click={applyForJob} class="apply-button w-full mt-2">Submit Application</button>
             </form>
             {/if}

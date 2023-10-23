@@ -40,10 +40,23 @@ const applied_jobs = async(user_id)=>{
         return response
 }
 
+const get_user_email = async(user_id)=>{
+    const response = await fetch(
+        global_url+`user?user_id=${user_id}`
+
+        ).then(
+        async(response)=>{
+            return await response.json()
+            }
+        );
+        return response
+}
+
 
 export{
     fetch_jobs,
     applyJob,
-    applied_jobs
+    applied_jobs,
+    get_user_email
 }
 
